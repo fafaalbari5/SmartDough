@@ -5,6 +5,7 @@ import { useTransactionStore } from "../store/transactionStore";
 import { useNavigation } from "@react-navigation/native";
 import { Picker } from "@react-native-picker/picker";
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "../constants/categories";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 export default function AddTransactionScreen() {
   const navigation = useNavigation<any>();
@@ -14,6 +15,8 @@ export default function AddTransactionScreen() {
   const [amount, setAmount] = useState("");
   const [type, setType] = useState<"income" | "expense">("expense");
   const [category, setCategory] = useState("Food");
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
     if (type === "expense") {
@@ -34,7 +37,7 @@ export default function AddTransactionScreen() {
       amount: Number(amount),
       category: category,
       type: type,
-      createdAt: new Date().toISOString(),
+      createdAt: date.toISOString(),
     });
 
     navigation.goBack();
@@ -139,6 +142,39 @@ export default function AddTransactionScreen() {
           ))}
         </Picker>
       </View>
+      <Text
+        style={{
+          fontWeight: "bold",
+          marginBottom: 10,
+        }}
+      >
+        Date
+      </Text>
+
+      <Pressable
+        onPress={() => setShowDatePicker(true)}
+        style={{
+          borderWidth: 1,
+          borderRadius: 10,
+          padding: 14,
+          marginBottom: 20,
+        }}
+      >
+        <Text>{date.toLocaleDateString("id-ID")}</Text>
+      </Pressable>
+      {showDatePicker && (
+        <DateTimePicker
+          value={date}
+          mode="date"
+          onChange={(event, selectedDate) => {
+            setShowDatePicker(false);
+
+            if (selectedDate) {
+              setDate(selectedDate);
+            }
+          }}
+        />
+      )}
 
       <Button title="Save" onPress={handleSave} />
     </View>

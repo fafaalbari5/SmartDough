@@ -1,15 +1,16 @@
-import { View, Text } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { Transaction } from "../types/transaction";
+import { useTransactionStore } from "../store/transactionStore";
 
 interface Props {
   transaction: Transaction;
 }
 
-export default function TransactionItem({
-  transaction,
-}: Props) {
-  const isIncome =
-    transaction.type === "income";
+export default function TransactionItem({ transaction }: Props) {
+  const isIncome = transaction.type === "income";
+  const removeTransaction = useTransactionStore(
+    (state) => state.removeTransaction,
+  );
 
   return (
     <View
@@ -55,17 +56,23 @@ export default function TransactionItem({
           style={{
             fontSize: 16,
             fontWeight: "bold",
-            color: isIncome
-              ? "#16a34a"
-              : "#dc2626",
+            color: isIncome ? "#16a34a" : "#dc2626",
           }}
         >
-          {isIncome ? "+" : "-"} Rp{" "}
-          {transaction.amount.toLocaleString(
-            "id-ID"
-          )}
+          {isIncome ? "+" : "-"} Rp {transaction.amount.toLocaleString("id-ID")}
         </Text>
       </View>
+      <Pressable onPress={() => removeTransaction(transaction.id)}>
+        <Text
+          style={{
+            color: "red",
+            marginTop: 10,
+            textAlign: "right",
+          }}
+        >
+          Delete
+        </Text>
+      </Pressable>
     </View>
   );
 }
