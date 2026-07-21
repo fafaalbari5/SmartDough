@@ -1,12 +1,29 @@
 import { View, Text } from "react-native";
+
 import BalanceCard from "../components/BalanceCard";
 
+import { useTransactionStore } from "../store/transactionStore";
+
 export default function DashboardScreen() {
+  const balance =
+    useTransactionStore((state) =>
+      state.getBalance()
+    );
+
+  const income =
+    useTransactionStore((state) =>
+      state.getTotalIncome()
+    );
+
+  const expense =
+    useTransactionStore((state) =>
+      state.getTotalExpense()
+    );
+
   return (
     <View
       style={{
         flex: 1,
-        backgroundColor: "#f5f5f5",
         padding: 20,
       }}
     >
@@ -14,20 +31,61 @@ export default function DashboardScreen() {
         style={{
           fontSize: 28,
           fontWeight: "bold",
+          marginTop: 50,
         }}
       >
         SmartDough
       </Text>
 
-      <Text
+      <BalanceCard balance={balance} />
+
+      <View
         style={{
-          marginTop: 10,
-          color: "gray",
+          flexDirection: "row",
+          marginTop: 20,
+          gap: 10,
         }}
       >
-        Personal Finance Tracker
-      </Text>
-      <BalanceCard />
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "#dcfce7",
+            padding: 15,
+            borderRadius: 15,
+          }}
+        >
+          <Text>Income</Text>
+
+          <Text
+            style={{
+              fontWeight: "bold",
+              marginTop: 5,
+            }}
+          >
+            Rp {income.toLocaleString("id-ID")}
+          </Text>
+        </View>
+
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "#fee2e2",
+            padding: 15,
+            borderRadius: 15,
+          }}
+        >
+          <Text>Expense</Text>
+
+          <Text
+            style={{
+              fontWeight: "bold",
+              marginTop: 5,
+            }}
+          >
+            Rp {expense.toLocaleString("id-ID")}
+          </Text>
+        </View>
+      </View>
     </View>
   );
 }

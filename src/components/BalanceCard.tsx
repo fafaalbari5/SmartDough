@@ -1,6 +1,10 @@
 import { View, Text } from "react-native";
 
-export default function BalanceCard() {
+interface Props {
+  balance: number;
+}
+
+export default function BalanceCard({ balance }: Props) {
   return (
     <View
       style={{
@@ -27,7 +31,7 @@ export default function BalanceCard() {
           marginTop: 10,
         }}
       >
-        Rp 0
+        Rp {balance.toLocaleString("id-ID")}
       </Text>
     </View>
   );

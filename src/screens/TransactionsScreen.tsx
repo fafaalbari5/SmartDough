@@ -1,15 +1,34 @@
-import { View, Text } from "react-native";
+import {
+  View,
+  FlatList,
+} from "react-native";
+
+import TransactionItem from "../components/TransactionItem";
+
+import { useTransactionStore } from "../store/transactionStore";
 
 export default function TransactionsScreen() {
+  const transactions =
+    useTransactionStore(
+      (state) => state.transactions
+    );
+
   return (
     <View
       style={{
         flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
+        padding: 20,
       }}
     >
-      <Text>Transactions</Text>
+      <FlatList
+        data={transactions}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <TransactionItem
+            transaction={item}
+          />
+        )}
+      />
     </View>
   );
 }
