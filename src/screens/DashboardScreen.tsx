@@ -1,24 +1,16 @@
-import { View, Text } from "react-native";
+import { View, Text, FlatList } from "react-native";
 
 import BalanceCard from "../components/BalanceCard";
 
 import { useTransactionStore } from "../store/transactionStore";
 
+import TransactionItem from "../components/TransactionItem";
+
 export default function DashboardScreen() {
-  const balance =
-    useTransactionStore((state) =>
-      state.getBalance()
-    );
-
-  const income =
-    useTransactionStore((state) =>
-      state.getTotalIncome()
-    );
-
-  const expense =
-    useTransactionStore((state) =>
-      state.getTotalExpense()
-    );
+  const balance = useTransactionStore((state) => state.getBalance());
+  const income = useTransactionStore((state) => state.getTotalIncome());
+  const expense = useTransactionStore((state) => state.getTotalExpense());
+  const transactions = useTransactionStore((state) => state.transactions);
 
   return (
     <View
@@ -31,7 +23,6 @@ export default function DashboardScreen() {
         style={{
           fontSize: 28,
           fontWeight: "bold",
-          marginTop: 50,
         }}
       >
         SmartDough
@@ -86,6 +77,19 @@ export default function DashboardScreen() {
           </Text>
         </View>
       </View>
+      <Text
+        style={{
+          fontSize: 20,
+          fontWeight: "bold",
+          marginTop: 30,
+          marginBottom: 15,
+        }}
+      >
+        Recent Transactions
+      </Text>
+      {transactions.slice(0, 3).map((transaction) => (
+        <TransactionItem key={transaction.id} transaction={transaction} />
+      ))}
     </View>
   );
 }
