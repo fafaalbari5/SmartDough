@@ -10,6 +10,8 @@ interface TransactionState {
 
   removeTransaction: (id: string) => void;
 
+  updateTransaction: (transaction: Transaction) => void;
+
   getBalance: () => number;
 
   getTotalIncome: () => number;
@@ -55,6 +57,15 @@ export const useTransactionStore = create<TransactionState>()(
       removeTransaction: (id) =>
         set((state) => ({
           transactions: state.transactions.filter((item) => item.id !== id),
+        })),
+
+      updateTransaction: (updatedTransaction) =>
+        set((state) => ({
+          transactions: state.transactions.map((transaction) =>
+            transaction.id === updatedTransaction.id
+              ? updatedTransaction
+              : transaction,
+          ),
         })),
 
       getBalance: () => {

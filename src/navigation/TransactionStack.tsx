@@ -23,6 +23,14 @@ export default function TransactionStack() {
           title: "Add Transaction",
         }}
       />
+
+      <Stack.Screen
+        name="EditTransaction"
+        component={AddTransactionScreen}
+        options={{
+          title: "Edit Transaction",
+        }}
+      />
     </Stack.Navigator>
   );
 }

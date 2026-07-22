@@ -40,7 +40,16 @@ export default function TransactionsScreen() {
       <FlatList
         data={transactions}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <TransactionItem transaction={item} />}
+        renderItem={({ item }) => (
+          <TransactionItem
+            transaction={item}
+            onEdit={() =>
+              navigation.navigate("EditTransaction", {
+                transaction: item,
+              })
+            }
+          />
+        )}
         ListEmptyComponent={
           <View
             style={{

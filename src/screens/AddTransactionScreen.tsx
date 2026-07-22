@@ -2,21 +2,30 @@ import { useState, useEffect } from "react";
 
 import { View, TextInput, Button, Pressable, Text } from "react-native";
 import { useTransactionStore } from "../store/transactionStore";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { Picker } from "@react-native-picker/picker";
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "../constants/categories";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 export default function AddTransactionScreen() {
+  const route = useRoute<any>();
+  const transaction = route.params?.transaction;
+  const isEditMode = !!transaction;
   const navigation = useNavigation<any>();
-
   const addTransaction = useTransactionStore((state) => state.addTransaction);
-  const [title, setTitle] = useState("");
-  const [amount, setAmount] = useState("");
-  const [type, setType] = useState<"income" | "expense">("expense");
-  const [category, setCategory] = useState("Food");
-  const [date, setDate] = useState(new Date());
+  const [title, setTitle] = useState(transaction?.title ?? "");
+  const [amount, setAmount] = useState(transaction?.amount?.toString() ?? "");
+  const [type, setType] = useState<"income" | "expense">(
+    transaction?.type ?? "expense",
+  );
+  const [category, setCategory] = useState(transaction?.category ?? "Food");
+  const [date, setDate] = useState(
+    transaction ? new Date(transaction.createdAt) : new Date(),
+  );
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const updateTransaction = useTransactionStore(
+    (state) => state.updateTransaction,
+  );
 
   useEffect(() => {
     if (type === "expense") {
@@ -31,14 +40,25 @@ export default function AddTransactionScreen() {
       return;
     }
 
-    addTransaction({
-      id: Date.now().toString(),
+    const transactionData = {
+      id: transaction?.id ?? Date.now().toString(),
+
       title,
+
       amount: Number(amount),
-      category: category,
-      type: type,
+
+      category,
+
+      type,
+
       createdAt: date.toISOString(),
-    });
+    };
+
+    if (isEditMode) {
+      updateTransaction(transactionData);
+    } else {
+      addTransaction(transactionData);
+    }
 
     navigation.goBack();
   };

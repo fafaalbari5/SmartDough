@@ -4,9 +4,10 @@ import { useTransactionStore } from "../store/transactionStore";
 
 interface Props {
   transaction: Transaction;
+  onEdit?: () => void;
 }
 
-export default function TransactionItem({ transaction }: Props) {
+export default function TransactionItem({ transaction, onEdit }: Props) {
   const isIncome = transaction.type === "income";
   const removeTransaction = useTransactionStore(
     (state) => state.removeTransaction,
@@ -62,17 +63,34 @@ export default function TransactionItem({ transaction }: Props) {
           {isIncome ? "+" : "-"} Rp {transaction.amount.toLocaleString("id-ID")}
         </Text>
       </View>
-      <Pressable onPress={() => removeTransaction(transaction.id)}>
-        <Text
-          style={{
-            color: "red",
-            marginTop: 10,
-            textAlign: "right",
-          }}
-        >
-          Delete
-        </Text>
-      </Pressable>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <Pressable onPress={onEdit}>
+          <Text
+            style={{
+              color: "#2563eb",
+              marginTop: 8,
+            }}
+          >
+            Edit
+          </Text>
+        </Pressable>
+        <Pressable onPress={() => removeTransaction(transaction.id)}>
+          <Text
+            style={{
+              color: "red",
+              marginTop: 10,
+            }}
+          >
+            Delete
+          </Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
