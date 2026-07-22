@@ -241,6 +241,7 @@ export default function StatisticsScreen() {
 
       {sortedCategories.map(([category, amount]) => (
         <View
+          key={category}
           style={{
             backgroundColor: "white",
             padding: 16,
