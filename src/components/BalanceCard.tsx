@@ -4,20 +4,22 @@ interface Props {
   balance: number;
 }
 
-export default function BalanceCard({ balance }: Props) {
+export default function BalanceCard({
+  balance,
+}: Props) {
   return (
     <View
       style={{
         backgroundColor: "#2563eb",
-        borderRadius: 20,
-        padding: 20,
-        marginTop: 30,
+        borderRadius: 24,
+        padding: 24,
+        marginTop: 25,
       }}
     >
       <Text
         style={{
-          color: "white",
-          fontSize: 16,
+          color: "#bfdbfe",
+          fontSize: 15,
         }}
       >
         Total Balance
@@ -26,9 +28,9 @@ export default function BalanceCard({ balance }: Props) {
       <Text
         style={{
           color: "white",
-          fontSize: 32,
+          fontSize: 34,
           fontWeight: "bold",
-          marginTop: 10,
+          marginTop: 8,
         }}
       >
         Rp {balance.toLocaleString("id-ID")}

@@ -186,6 +186,8 @@ export default function AddTransactionScreen() {
         <DateTimePicker
           value={date}
           mode="date"
+          minimumDate={new Date("2000-01-01")}
+          maximumDate={new Date()}
           onChange={(event, selectedDate) => {
             setShowDatePicker(false);
 

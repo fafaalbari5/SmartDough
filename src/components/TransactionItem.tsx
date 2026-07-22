@@ -50,6 +50,15 @@ export default function TransactionItem({ transaction, onEdit }: Props) {
             }}
           >
             {transaction.category}
+            <Text
+              style={{
+                color: "#94a3b8",
+                fontSize: 12,
+                marginTop: 4,
+              }}
+            >
+              {new Date(transaction.createdAt).toLocaleDateString("id-ID")}
+            </Text>
           </Text>
         </View>
 

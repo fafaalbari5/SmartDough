@@ -1,10 +1,11 @@
-import { View, Text, FlatList } from "react-native";
+import { View, Text, FlatList, ScrollView } from "react-native";
 
 import BalanceCard from "../components/BalanceCard";
 
 import { useTransactionStore } from "../store/transactionStore";
 
 import TransactionItem from "../components/TransactionItem";
+import PageHeader from "../components/PageHeader";
 
 export default function DashboardScreen() {
   const balance = useTransactionStore((state) => state.getBalance());
@@ -13,20 +14,17 @@ export default function DashboardScreen() {
   const transactions = useTransactionStore((state) => state.transactions);
 
   return (
-    <View
+    <ScrollView
       style={{
         flex: 1,
+        backgroundColor: "#f8fafc",
+      }}
+      contentContainerStyle={{
         padding: 20,
+        paddingBottom: 20,
       }}
     >
-      <Text
-        style={{
-          fontSize: 28,
-          fontWeight: "bold",
-        }}
-      >
-        SmartDough
-      </Text>
+      <PageHeader title="SmartDough" subtitle="Personal Finance Tracker" />
 
       <BalanceCard balance={balance} />
 
@@ -87,9 +85,23 @@ export default function DashboardScreen() {
       >
         Recent Transactions
       </Text>
-      {transactions.slice(0, 3).map((transaction) => (
-        <TransactionItem key={transaction.id} transaction={transaction} />
-      ))}
-    </View>
+      {transactions.length === 0 ? (
+        <Text
+          style={{
+            color: "#64748b",
+            textAlign: "center",
+            marginTop: 20,
+          }}
+        >
+          No transactions yet
+        </Text>
+      ) : (
+        transactions
+          .slice(0, 3)
+          .map((transaction) => (
+            <TransactionItem key={transaction.id} transaction={transaction} />
+          ))
+      )}
+    </ScrollView>
   );
 }

@@ -17,26 +17,6 @@ export default function TransactionsScreen() {
         backgroundColor: "#f5f5f5",
       }}
     >
-      <Pressable
-        onPress={() => navigation.navigate("AddTransaction")}
-        style={{
-          backgroundColor: "#2563eb",
-          padding: 14,
-          borderRadius: 12,
-          marginBottom: 20,
-        }}
-      >
-        <Text
-          style={{
-            color: "white",
-            textAlign: "center",
-            fontWeight: "600",
-          }}
-        >
-          + Add Transaction
-        </Text>
-      </Pressable>
-
       <FlatList
         data={transactions}
         keyExtractor={(item) => item.id}
@@ -67,6 +47,37 @@ export default function TransactionsScreen() {
           </View>
         }
       />
+      <Pressable
+        onPress={() => navigation.navigate("AddTransaction")}
+        style={{
+          position: "absolute",
+
+          right: 20,
+          bottom: 20,
+
+          width: 60,
+          height: 60,
+
+          borderRadius: 30,
+
+          backgroundColor: "#2563eb",
+
+          justifyContent: "center",
+          alignItems: "center",
+
+          elevation: 5,
+        }}
+      >
+        <Text
+          style={{
+            color: "white",
+            fontSize: 30,
+            fontWeight: "bold",
+          }}
+        >
+          +
+        </Text>
+      </Pressable>
     </View>
   );
 }
