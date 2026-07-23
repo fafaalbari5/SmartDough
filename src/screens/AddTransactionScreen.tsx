@@ -1,21 +1,32 @@
-import { useState, useEffect } from "react";
-
+import { useEffect, useMemo, useState } from "react";
 import { View, TextInput, Button, Pressable, Text } from "react-native";
-import { useTransactionStore } from "../store/transactionStore";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { Picker } from "@react-native-picker/picker";
-import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "../constants/categories";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { Picker } from "@react-native-picker/picker";
+import { COLORS, RADIUS, SPACING } from "../constants/theme";
+import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "../constants/categories";
+import { useTransactionStore } from "../store/transactionStore";
+import { Transaction, TransactionType } from "../types/transaction";
+import { formatDate } from "../utils/formatters";
+
+interface RouteParams {
+  transaction?: Transaction;
+}
 
 export default function AddTransactionScreen() {
   const route = useRoute<any>();
-  const transaction = route.params?.transaction;
-  const isEditMode = !!transaction;
+  const params = route.params as RouteParams | undefined;
+  const transaction = params?.transaction;
+  const isEditMode = Boolean(transaction);
   const navigation = useNavigation<any>();
   const addTransaction = useTransactionStore((state) => state.addTransaction);
+  const updateTransaction = useTransactionStore(
+    (state) => state.updateTransaction,
+  );
+
   const [title, setTitle] = useState(transaction?.title ?? "");
   const [amount, setAmount] = useState(transaction?.amount?.toString() ?? "");
-  const [type, setType] = useState<"income" | "expense">(
+  const [type, setType] = useState<TransactionType>(
     transaction?.type ?? "expense",
   );
   const [category, setCategory] = useState(transaction?.category ?? "Food");
@@ -23,34 +34,32 @@ export default function AddTransactionScreen() {
     transaction ? new Date(transaction.createdAt) : new Date(),
   );
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const updateTransaction = useTransactionStore(
-    (state) => state.updateTransaction,
-  );
 
   useEffect(() => {
-    if (type === "expense") {
-      setCategory("Food");
-    } else {
-      setCategory("Salary");
-    }
+    const defaultCategory = type === "expense" ? "Food" : "Salary";
+    setCategory((currentCategory) =>
+      currentCategory === "Food" || currentCategory === "Salary"
+        ? defaultCategory
+        : currentCategory,
+    );
   }, [type]);
 
+  const categories = useMemo(
+    () => (type === "expense" ? EXPENSE_CATEGORIES : INCOME_CATEGORIES),
+    [type],
+  );
+
   const handleSave = () => {
-    if (!title || !amount) {
+    if (!title.trim() || !amount.trim()) {
       return;
     }
 
-    const transactionData = {
+    const transactionData: Transaction = {
       id: transaction?.id ?? Date.now().toString(),
-
-      title,
-
+      title: title.trim(),
       amount: Number(amount),
-
       category,
-
       type,
-
       createdAt: date.toISOString(),
     };
 
@@ -63,14 +72,12 @@ export default function AddTransactionScreen() {
     navigation.goBack();
   };
 
-  const categories =
-    type === "expense" ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
-
   return (
     <View
       style={{
         flex: 1,
-        padding: 20,
+        padding: SPACING.huge,
+        backgroundColor: COLORS.background,
       }}
     >
       <TextInput
@@ -79,9 +86,10 @@ export default function AddTransactionScreen() {
         onChangeText={setTitle}
         style={{
           borderWidth: 1,
-          padding: 12,
-          borderRadius: 10,
-          marginBottom: 15,
+          borderColor: COLORS.border,
+          padding: SPACING.lg,
+          borderRadius: RADIUS.sm,
+          marginBottom: SPACING.xxxl,
         }}
       />
 
@@ -92,34 +100,29 @@ export default function AddTransactionScreen() {
         onChangeText={setAmount}
         style={{
           borderWidth: 1,
-          padding: 12,
-          borderRadius: 10,
-          marginBottom: 15,
+          borderColor: COLORS.border,
+          padding: SPACING.lg,
+          borderRadius: RADIUS.sm,
+          marginBottom: SPACING.xxxl,
         }}
       />
-      <Text
-        style={{
-          marginBottom: 10,
-          fontWeight: "bold",
-        }}
-      >
-        Type
-      </Text>
+
+      <Text style={{ marginBottom: SPACING.md, fontWeight: "bold" }}>Type</Text>
 
       <View
         style={{
           flexDirection: "row",
-          gap: 10,
-          marginBottom: 20,
+          gap: SPACING.md,
+          marginBottom: SPACING.huge,
         }}
       >
         <Pressable
           onPress={() => setType("income")}
           style={{
             flex: 1,
-            padding: 12,
-            borderRadius: 10,
-            backgroundColor: type === "income" ? "#22c55e" : "#e5e7eb",
+            padding: SPACING.lg,
+            borderRadius: RADIUS.sm,
+            backgroundColor: type === "income" ? COLORS.income : COLORS.border,
           }}
         >
           <Text>Income</Text>
@@ -129,28 +132,26 @@ export default function AddTransactionScreen() {
           onPress={() => setType("expense")}
           style={{
             flex: 1,
-            padding: 12,
-            borderRadius: 10,
-            backgroundColor: type === "expense" ? "#ef4444" : "#e5e7eb",
+            padding: SPACING.lg,
+            borderRadius: RADIUS.sm,
+            backgroundColor:
+              type === "expense" ? COLORS.expense : COLORS.border,
           }}
         >
           <Text>Expense</Text>
         </Pressable>
       </View>
-      <Text
-        style={{
-          fontWeight: "bold",
-          marginBottom: 10,
-        }}
-      >
+
+      <Text style={{ fontWeight: "bold", marginBottom: SPACING.md }}>
         Category
       </Text>
 
       <View
         style={{
           borderWidth: 1,
-          borderRadius: 10,
-          marginBottom: 20,
+          borderColor: COLORS.border,
+          borderRadius: RADIUS.sm,
+          marginBottom: SPACING.huge,
         }}
       >
         <Picker
@@ -162,27 +163,23 @@ export default function AddTransactionScreen() {
           ))}
         </Picker>
       </View>
-      <Text
-        style={{
-          fontWeight: "bold",
-          marginBottom: 10,
-        }}
-      >
-        Date
-      </Text>
+
+      <Text style={{ fontWeight: "bold", marginBottom: SPACING.md }}>Date</Text>
 
       <Pressable
         onPress={() => setShowDatePicker(true)}
         style={{
           borderWidth: 1,
-          borderRadius: 10,
-          padding: 14,
-          marginBottom: 20,
+          borderColor: COLORS.border,
+          borderRadius: RADIUS.sm,
+          padding: SPACING.xl,
+          marginBottom: SPACING.huge,
         }}
       >
-        <Text>{date.toLocaleDateString("id-ID")}</Text>
+        <Text>{formatDate(date)}</Text>
       </Pressable>
-      {showDatePicker && (
+
+      {showDatePicker ? (
         <DateTimePicker
           value={date}
           mode="date"
@@ -196,7 +193,7 @@ export default function AddTransactionScreen() {
             }
           }}
         />
-      )}
+      ) : null}
 
       <Button title="Save" onPress={handleSave} />
     </View>

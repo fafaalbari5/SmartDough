@@ -1,6 +1,8 @@
 import { View, Text, Pressable } from "react-native";
-import { Transaction } from "../types/transaction";
+import { COLORS, RADIUS, SPACING } from "../constants/theme";
 import { useTransactionStore } from "../store/transactionStore";
+import { formatCurrency, formatDate } from "../utils/formatters";
+import { Transaction } from "../types/transaction";
 
 interface Props {
   transaction: Transaction;
@@ -16,11 +18,11 @@ export default function TransactionItem({ transaction, onEdit }: Props) {
   return (
     <View
       style={{
-        backgroundColor: "white",
-        padding: 16,
-        borderRadius: 16,
-        marginBottom: 12,
-        shadowColor: "#000",
+        backgroundColor: COLORS.surface,
+        padding: SPACING.xxxl,
+        borderRadius: RADIUS.xl,
+        marginBottom: SPACING.lg,
+        shadowColor: COLORS.shadow,
         shadowOpacity: 0.08,
         shadowRadius: 4,
         elevation: 2,
@@ -33,31 +35,21 @@ export default function TransactionItem({ transaction, onEdit }: Props) {
           alignItems: "center",
         }}
       >
-        <View>
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: "600",
-            }}
-          >
+        <View style={{ flex: 1, marginRight: SPACING.md }}>
+          <Text style={{ fontSize: 16, fontWeight: "600" }}>
             {transaction.title}
           </Text>
 
-          <Text
-            style={{
-              color: "#6b7280",
-              marginTop: 4,
-            }}
-          >
+          <Text style={{ color: COLORS.secondaryText, marginTop: SPACING.xs }}>
             {transaction.category}
             <Text
               style={{
-                color: "#94a3b8",
+                color: COLORS.tertiaryText,
                 fontSize: 12,
-                marginTop: 4,
+                marginTop: SPACING.xs,
               }}
             >
-              {new Date(transaction.createdAt).toLocaleDateString("id-ID")}
+              {` ${formatDate(transaction.createdAt)}`}
             </Text>
           </Text>
         </View>
@@ -66,36 +58,28 @@ export default function TransactionItem({ transaction, onEdit }: Props) {
           style={{
             fontSize: 16,
             fontWeight: "bold",
-            color: isIncome ? "#16a34a" : "#dc2626",
+            color: isIncome ? COLORS.success : COLORS.danger,
           }}
         >
-          {isIncome ? "+" : "-"} Rp {transaction.amount.toLocaleString("id-ID")}
+          {isIncome ? "+" : "-"} {formatCurrency(transaction.amount)}
         </Text>
       </View>
+
       <View
         style={{
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
+          marginTop: SPACING.sm,
         }}
       >
         <Pressable onPress={onEdit}>
-          <Text
-            style={{
-              color: "#2563eb",
-              marginTop: 8,
-            }}
-          >
+          <Text style={{ color: COLORS.primary, marginTop: SPACING.sm }}>
             Edit
           </Text>
         </Pressable>
         <Pressable onPress={() => removeTransaction(transaction.id)}>
-          <Text
-            style={{
-              color: "red",
-              marginTop: 10,
-            }}
-          >
+          <Text style={{ color: COLORS.danger, marginTop: SPACING.sm }}>
             Delete
           </Text>
         </Pressable>

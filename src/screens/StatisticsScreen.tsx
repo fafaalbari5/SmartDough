@@ -1,216 +1,87 @@
 import { View, Text, Dimensions, ScrollView } from "react-native";
-import { useTransactionStore } from "../store/transactionStore";
 import { PieChart } from "react-native-chart-kit";
 import PageHeader from "../components/PageHeader";
+import { COLORS, RADIUS, SPACING } from "../constants/theme";
+import { useTransactionSummary } from "../hooks/useTransactionSummary";
+import { formatCurrency } from "../utils/formatters";
 
 export default function StatisticsScreen() {
   const screenWidth = Dimensions.get("window").width;
-  const transactions = useTransactionStore((state) => state.transactions);
-  const income = useTransactionStore((state) => state.getTotalIncome());
-  const expense = useTransactionStore((state) => state.getTotalExpense());
-  const balance = useTransactionStore((state) => state.getBalance());
-  const currentMonth = new Date().getMonth();
+  const {
+    monthlyExpense,
+    sortedCategories,
+    topCategory,
+    highestExpense,
+    totalTransactions,
+  } = useTransactionSummary();
 
-  const monthlyExpense = transactions
-    .filter((transaction) => {
-      const date = new Date(transaction.createdAt);
-
-      return transaction.type === "expense" && date.getMonth() === currentMonth;
-    })
-    .reduce((total, item) => total + item.amount, 0);
-
-  const expenseByCategory = transactions
-    .filter((item) => item.type === "expense")
-    .reduce(
-      (acc, transaction) => {
-        acc[transaction.category] =
-          (acc[transaction.category] || 0) + transaction.amount;
-
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
-
-  const sortedCategories = Object.entries(expenseByCategory).sort(
-    (a, b) => b[1] - a[1],
-  );
-  const totalTransactions = transactions.length;
-
-  const highestExpense = transactions
-    .filter((t) => t.type === "expense")
-    .sort((a, b) => b.amount - a.amount)[0];
-
-  const topCategory = Object.entries(expenseByCategory).sort(
-    (a, b) => b[1] - a[1],
-  )[0];
-
-  const pieData = Object.entries(expenseByCategory).map(
-    ([category, amount], index) => ({
-      name: category,
-      amount,
-      color: ["#ef4444", "#f97316", "#eab308", "#22c55e", "#3b82f6", "#8b5cf6"][
-        index % 6
-      ],
-
-      legendFontColor: "#333",
-      legendFontSize: 14,
-    }),
-  );
+  const pieData = sortedCategories.map(([category, amount], index) => ({
+    name: category,
+    amount,
+    color: ["#ef4444", "#f97316", "#eab308", "#22c55e", "#3b82f6", "#8b5cf6"][
+      index % 6
+    ],
+    legendFontColor: "#333",
+    legendFontSize: 14,
+  }));
 
   return (
     <ScrollView
-      style={{
-        flex: 1,
-        backgroundColor: "#f8fafc",
-      }}
+      style={{ flex: 1, backgroundColor: COLORS.background }}
       contentContainerStyle={{
-        padding: 20,
-        paddingBottom: 20,
+        padding: SPACING.huge,
+        paddingBottom: SPACING.huge,
       }}
     >
       <PageHeader title="Statistics" />
-      <View
-        style={{
-          backgroundColor: "white",
-          padding: 16,
-          borderRadius: 16,
-          marginBottom: 20,
-        }}
-      >
-        <Text
-          style={{
-            color: "#64748b",
-          }}
-        >
-          This Month Expense
-        </Text>
 
-        <Text
-          style={{
-            fontSize: 24,
-            fontWeight: "700",
-            marginTop: 6,
-          }}
-        >
-          Rp {monthlyExpense.toLocaleString("id-ID")}
-        </Text>
-      </View>
+      <SummaryCard
+        title="This Month Expense"
+        value={formatCurrency(monthlyExpense)}
+      />
 
       <View
         style={{
           flexDirection: "row",
-          gap: 10,
-          marginBottom: 20,
+          gap: SPACING.md,
+          marginBottom: SPACING.huge,
         }}
       >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "white",
-            padding: 16,
-            borderRadius: 16,
-          }}
-        >
-          <Text
-            style={{
-              color: "#64748b",
-              fontSize: 12,
-            }}
-          >
-            Top Category
-          </Text>
-
-          <Text
-            style={{
-              fontSize: 18,
-              fontWeight: "700",
-              marginTop: 6,
-            }}
-          >
-            {topCategory ? topCategory[0] : "-"}
-          </Text>
-        </View>
-
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "white",
-            padding: 16,
-            borderRadius: 16,
-          }}
-        >
-          <Text
-            style={{
-              color: "#64748b",
-              fontSize: 12,
-            }}
-          >
-            Highest Expense
-          </Text>
-
-          <Text
-            style={{
-              fontSize: 18,
-              fontWeight: "700",
-              marginTop: 6,
-            }}
-          >
-            {highestExpense
-              ? `Rp ${highestExpense.amount.toLocaleString("id-ID")}`
-              : "-"}
-          </Text>
-        </View>
+        <InfoCard
+          title="Top Category"
+          value={topCategory ? topCategory[0] : "-"}
+        />
+        <InfoCard
+          title="Highest Expense"
+          value={highestExpense ? formatCurrency(highestExpense.amount) : "-"}
+        />
       </View>
-      <View
-        style={{
-          backgroundColor: "white",
-          padding: 16,
-          borderRadius: 16,
-          marginBottom: 20,
-        }}
-      >
-        <Text
-          style={{
-            color: "#64748b",
-            fontSize: 12,
-          }}
-        >
-          Total Transactions
-        </Text>
 
-        <Text
-          style={{
-            fontSize: 24,
-            fontWeight: "700",
-            marginTop: 6,
-          }}
-        >
-          {totalTransactions}
-        </Text>
-      </View>
+      <SummaryCard
+        title="Total Transactions"
+        value={String(totalTransactions)}
+      />
+
       <Text
-        style={{
-          fontSize: 18,
-          fontWeight: "700",
-          marginBottom: 10,
-        }}
+        style={{ fontSize: 18, fontWeight: "700", marginBottom: SPACING.md }}
       >
         Expense Distribution
       </Text>
+
       <View
         style={{
-          backgroundColor: "white",
-          borderRadius: 20,
-          paddingVertical: 20,
-          marginBottom: 20,
+          backgroundColor: COLORS.surface,
+          borderRadius: RADIUS.xxl,
+          paddingVertical: SPACING.xxxl,
+          marginBottom: SPACING.huge,
         }}
       >
         {pieData.length === 0 ? (
           <Text
             style={{
               textAlign: "center",
-              color: "#64748b",
-              paddingVertical: 30,
+              color: COLORS.mutedText,
+              paddingVertical: SPACING.massive,
             }}
           >
             No expense data available
@@ -223,18 +94,13 @@ export default function StatisticsScreen() {
             accessor="amount"
             backgroundColor="transparent"
             paddingLeft="0"
-            chartConfig={{
-              color: (opacity = 1) => `rgba(0,0,0,${opacity})`,
-            }}
+            chartConfig={{ color: (opacity = 1) => `rgba(0,0,0,${opacity})` }}
           />
         )}
       </View>
+
       <Text
-        style={{
-          fontSize: 18,
-          fontWeight: "700",
-          marginBottom: 10,
-        }}
+        style={{ fontSize: 18, fontWeight: "700", marginBottom: SPACING.md }}
       >
         Expense by Category
       </Text>
@@ -243,34 +109,57 @@ export default function StatisticsScreen() {
         <View
           key={category}
           style={{
-            backgroundColor: "white",
-            padding: 16,
-            borderRadius: 16,
-            marginBottom: 10,
-
+            backgroundColor: COLORS.surface,
+            padding: SPACING.xxxl,
+            borderRadius: RADIUS.xl,
+            marginBottom: SPACING.sm,
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
           }}
         >
-          <Text
-            style={{
-              fontWeight: "600",
-            }}
-          >
-            {category}
-          </Text>
-
-          <Text
-            style={{
-              color: "#dc2626",
-              fontWeight: "700",
-            }}
-          >
-            Rp {amount.toLocaleString("id-ID")}
+          <Text style={{ fontWeight: "600" }}>{category}</Text>
+          <Text style={{ color: COLORS.danger, fontWeight: "700" }}>
+            {formatCurrency(amount)}
           </Text>
         </View>
       ))}
     </ScrollView>
+  );
+}
+
+function SummaryCard({ title, value }: { title: string; value: string }) {
+  return (
+    <View
+      style={{
+        backgroundColor: COLORS.surface,
+        padding: SPACING.xxxl,
+        borderRadius: RADIUS.xl,
+        marginBottom: SPACING.huge,
+      }}
+    >
+      <Text style={{ color: COLORS.mutedText }}>{title}</Text>
+      <Text style={{ fontSize: 24, fontWeight: "700", marginTop: SPACING.xs }}>
+        {value}
+      </Text>
+    </View>
+  );
+}
+
+function InfoCard({ title, value }: { title: string; value: string }) {
+  return (
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: COLORS.surface,
+        padding: SPACING.xxxl,
+        borderRadius: RADIUS.xl,
+      }}
+    >
+      <Text style={{ color: COLORS.mutedText, fontSize: 12 }}>{title}</Text>
+      <Text style={{ fontSize: 18, fontWeight: "700", marginTop: SPACING.xs }}>
+        {value}
+      </Text>
+    </View>
   );
 }

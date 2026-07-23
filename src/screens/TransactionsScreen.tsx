@@ -1,146 +1,150 @@
-import { useMemo, useState } from "react";
-import {
-  View,
-  FlatList,
-  Pressable,
-  Text,
-  TextInput,
-} from "react-native";
+import { useCallback } from "react";
+import { View, FlatList, Pressable, Text, TextInput } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
 import TransactionItem from "../components/TransactionItem";
+import { COLORS, RADIUS, SPACING } from "../constants/theme";
+import {
+  TRANSACTION_FILTERS,
+  TRANSACTION_SORT_OPTIONS,
+} from "../constants/theme";
+import { useTransactionFilters } from "../hooks/useTransactionFilters";
 import { useTransactionStore } from "../store/transactionStore";
+import { getTransactionTypeLabel } from "../utils/formatters";
 
 export default function TransactionsScreen() {
   const navigation = useNavigation<any>();
+  const transactions = useTransactionStore((state) => state.transactions);
+  const {
+    search,
+    filter,
+    sortBy,
+    setSearch,
+    setFilter,
+    setSortBy,
+    filteredTransactions,
+  } = useTransactionFilters({ transactions });
 
-  const transactions = useTransactionStore(
-    (state) => state.transactions,
+  const handleEdit = useCallback(
+    (transaction: (typeof transactions)[number]) => {
+      navigation.navigate("EditTransaction", { transaction });
+    },
+    [navigation],
   );
 
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<
-    "all" | "income" | "expense"
-  >("all");
-
-  const filteredTransactions = useMemo(() => {
-    const keyword = search.trim().toLowerCase();
-
-    return transactions.filter((transaction) => {
-      const matchesSearch =
-        keyword === "" ||
-        transaction.title.toLowerCase().includes(keyword) ||
-        transaction.category.toLowerCase().includes(keyword) ||
-        transaction.type.toLowerCase().includes(keyword) ||
-        transaction.amount.toString().includes(keyword);
-
-      const matchesFilter =
-        filter === "all" || transaction.type === filter;
-
-      return matchesSearch && matchesFilter;
-    });
-  }, [transactions, search, filter]);
+  const handleAdd = useCallback(() => {
+    navigation.navigate("AddTransaction");
+  }, [navigation]);
 
   return (
     <View
       style={{
         flex: 1,
-        padding: 20,
-        backgroundColor: "#f8fafc",
+        padding: SPACING.huge,
+        backgroundColor: COLORS.background,
       }}
     >
-      {/* Search */}
-
       <TextInput
         placeholder="Search transaction..."
         value={search}
         onChangeText={setSearch}
         placeholderTextColor="#9ca3af"
         style={{
-          backgroundColor: "white",
-          padding: 14,
-          borderRadius: 14,
+          backgroundColor: COLORS.surface,
+          padding: SPACING.xl,
+          borderRadius: RADIUS.lg,
+          borderColor: COLORS.border,
           borderWidth: 1,
-          borderColor: "#e5e7eb",
-          marginBottom: 16,
+          marginBottom: SPACING.xxxl,
         }}
       />
-
-      {/* Filter */}
 
       <View
         style={{
           flexDirection: "row",
-          gap: 10,
-          marginBottom: 16,
+          gap: SPACING.md,
+          marginBottom: SPACING.xxxl,
         }}
       >
-        {(["all", "income", "expense"] as const).map((type) => (
-          <Pressable
-            key={type}
-            onPress={() => setFilter(type)}
-            style={{
-              flex: 1,
-              paddingVertical: 12,
-              borderRadius: 12,
-              alignItems: "center",
-              borderWidth: 1,
-              borderColor:
-                filter === type ? "#2563eb" : "#e5e7eb",
-              backgroundColor:
-                filter === type ? "#2563eb" : "white",
-            }}
-          >
-            <Text
+        {TRANSACTION_FILTERS.map((type) => {
+          const selected = filter === type;
+
+          return (
+            <Pressable
+              key={type}
+              onPress={() => setFilter(type)}
               style={{
-                color:
-                  filter === type ? "white" : "#374151",
-                fontWeight: "600",
+                flex: 1,
+                paddingVertical: SPACING.lg,
+                borderRadius: RADIUS.md,
+                alignItems: "center",
+                borderWidth: 1,
+                borderColor: selected ? COLORS.primary : COLORS.border,
+                backgroundColor: selected ? COLORS.primary : COLORS.surface,
               }}
             >
-              {type === "all"
-                ? "All"
-                : type === "income"
-                ? "Income"
-                : "Expense"}
-            </Text>
-          </Pressable>
-        ))}
+              <Text
+                style={{
+                  color: selected ? COLORS.white : "#374151",
+                  fontWeight: "600",
+                }}
+              >
+                {type === "all" ? "All" : getTransactionTypeLabel(type)}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
 
-      {/* List */}
+      <View
+        style={{
+          flexDirection: "row",
+          flexWrap: "wrap",
+          gap: SPACING.sm,
+          marginBottom: SPACING.xxxl,
+        }}
+      >
+        {TRANSACTION_SORT_OPTIONS.map((item) => {
+          const selected = sortBy === item.value;
+
+          return (
+            <Pressable
+              key={item.value}
+              onPress={() => setSortBy(item.value)}
+              style={{
+                paddingHorizontal: SPACING.xl,
+                paddingVertical: SPACING.md,
+                borderRadius: RADIUS.pill,
+                backgroundColor: selected ? COLORS.primary : COLORS.surface,
+                borderWidth: 1,
+                borderColor: COLORS.border,
+              }}
+            >
+              <Text
+                style={{
+                  color: selected ? COLORS.white : "#374151",
+                  fontWeight: "600",
+                }}
+              >
+                {item.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
 
       <FlatList
         data={filteredTransactions}
         keyExtractor={(item) => item.id}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingBottom: 100,
-        }}
+        contentContainerStyle={{ paddingBottom: 100 }}
         renderItem={({ item }) => (
-          <TransactionItem
-            transaction={item}
-            onEdit={() =>
-              navigation.navigate("EditTransaction", {
-                transaction: item,
-              })
-            }
-          />
+          <TransactionItem transaction={item} onEdit={() => handleEdit(item)} />
         )}
         ListEmptyComponent={
-          <View
-            style={{
-              marginTop: 80,
-              alignItems: "center",
-            }}
-          >
-            <Text
-              style={{
-                color: "#6b7280",
-                fontSize: 15,
-              }}
-            >
+          <View style={{ marginTop: 80, alignItems: "center" }}>
+            <Text style={{ color: "#6b7280", fontSize: 15 }}>
               {search.trim() !== "" || filter !== "all"
                 ? "No matching transaction"
                 : "No transactions yet"}
@@ -149,36 +153,22 @@ export default function TransactionsScreen() {
         }
       />
 
-      {/* Floating Button */}
-
       <Pressable
-        onPress={() =>
-          navigation.navigate("AddTransaction")
-        }
+        onPress={handleAdd}
         style={{
           position: "absolute",
-          right: 20,
-          bottom: 20,
-
+          right: SPACING.huge,
+          bottom: SPACING.huge,
           width: 60,
           height: 60,
-
-          borderRadius: 30,
-          backgroundColor: "#2563eb",
-
+          borderRadius: RADIUS.pill,
+          backgroundColor: COLORS.primary,
           justifyContent: "center",
           alignItems: "center",
-
           elevation: 6,
         }}
       >
-        <Text
-          style={{
-            color: "white",
-            fontSize: 30,
-            fontWeight: "700",
-          }}
-        >
+        <Text style={{ color: COLORS.white, fontSize: 30, fontWeight: "700" }}>
           +
         </Text>
       </Pressable>

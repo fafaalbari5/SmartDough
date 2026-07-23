@@ -1,39 +1,34 @@
 import { View, Text } from "react-native";
+import { COLORS, RADIUS, SPACING } from "../constants/theme";
+import { formatCurrency } from "../utils/formatters";
 
 interface Props {
   balance: number;
 }
 
-export default function BalanceCard({
-  balance,
-}: Props) {
+export default function BalanceCard({ balance }: Props) {
   return (
     <View
       style={{
-        backgroundColor: "#2563eb",
-        borderRadius: 24,
-        padding: 24,
-        marginTop: 25,
+        backgroundColor: COLORS.primary,
+        borderRadius: RADIUS.xxl,
+        padding: SPACING.giant,
+        marginTop: SPACING.giant,
       }}
     >
-      <Text
-        style={{
-          color: "#bfdbfe",
-          fontSize: 15,
-        }}
-      >
+      <Text style={{ color: COLORS.primarySoft, fontSize: 15 }}>
         Total Balance
       </Text>
 
       <Text
         style={{
-          color: "white",
+          color: COLORS.white,
           fontSize: 34,
           fontWeight: "bold",
-          marginTop: 8,
+          marginTop: SPACING.sm,
         }}
       >
-        Rp {balance.toLocaleString("id-ID")}
+        {formatCurrency(balance)}
       </Text>
     </View>
   );

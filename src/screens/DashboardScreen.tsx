@@ -1,107 +1,92 @@
-import { View, Text, FlatList, ScrollView } from "react-native";
-
+import { View, Text, ScrollView } from "react-native";
 import BalanceCard from "../components/BalanceCard";
-
-import { useTransactionStore } from "../store/transactionStore";
-
 import TransactionItem from "../components/TransactionItem";
 import PageHeader from "../components/PageHeader";
+import { COLORS, RADIUS, SPACING, TYPOGRAPHY } from "../constants/theme";
+import { useTransactionSummary } from "../hooks/useTransactionSummary";
+import { formatCurrency } from "../utils/formatters";
 
 export default function DashboardScreen() {
-  const balance = useTransactionStore((state) => state.getBalance());
-  const income = useTransactionStore((state) => state.getTotalIncome());
-  const expense = useTransactionStore((state) => state.getTotalExpense());
-  const transactions = useTransactionStore((state) => state.transactions);
+  const { balance, income, expense, recentTransactions } =
+    useTransactionSummary();
 
   return (
     <ScrollView
-      style={{
-        flex: 1,
-        backgroundColor: "#f8fafc",
-      }}
+      style={{ flex: 1, backgroundColor: COLORS.background }}
       contentContainerStyle={{
-        padding: 20,
-        paddingBottom: 20,
+        padding: SPACING.huge,
+        paddingBottom: SPACING.huge,
       }}
     >
       <PageHeader title="SmartDough" subtitle="Personal Finance Tracker" />
-
       <BalanceCard balance={balance} />
 
       <View
         style={{
           flexDirection: "row",
-          marginTop: 20,
-          gap: 10,
+          marginTop: SPACING.huge,
+          gap: SPACING.md,
         }}
       >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "#dcfce7",
-            padding: 15,
-            borderRadius: 15,
-          }}
-        >
-          <Text>Income</Text>
-
-          <Text
-            style={{
-              fontWeight: "bold",
-              marginTop: 5,
-            }}
-          >
-            Rp {income.toLocaleString("id-ID")}
-          </Text>
-        </View>
-
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "#fee2e2",
-            padding: 15,
-            borderRadius: 15,
-          }}
-        >
-          <Text>Expense</Text>
-
-          <Text
-            style={{
-              fontWeight: "bold",
-              marginTop: 5,
-            }}
-          >
-            Rp {expense.toLocaleString("id-ID")}
-          </Text>
-        </View>
+        <OverviewCard
+          label="Income"
+          value={formatCurrency(income)}
+          accent={COLORS.successSoft}
+        />
+        <OverviewCard
+          label="Expense"
+          value={formatCurrency(expense)}
+          accent={COLORS.dangerSoft}
+        />
       </View>
+
       <Text
         style={{
-          fontSize: 20,
-          fontWeight: "bold",
-          marginTop: 30,
-          marginBottom: 15,
+          ...TYPOGRAPHY.sectionTitle,
+          marginTop: SPACING.massive,
+          marginBottom: SPACING.xxxl,
         }}
       >
         Recent Transactions
       </Text>
-      {transactions.length === 0 ? (
+
+      {recentTransactions.length === 0 ? (
         <Text
           style={{
-            color: "#64748b",
+            color: COLORS.mutedText,
             textAlign: "center",
-            marginTop: 20,
+            marginTop: SPACING.huge,
           }}
         >
           No transactions yet
         </Text>
       ) : (
-        transactions
-          .slice(0, 3)
-          .map((transaction) => (
-            <TransactionItem key={transaction.id} transaction={transaction} />
-          ))
+        recentTransactions.map((transaction) => (
+          <TransactionItem key={transaction.id} transaction={transaction} />
+        ))
       )}
     </ScrollView>
+  );
+}
+
+interface OverviewCardProps {
+  label: string;
+  value: string;
+  accent: string;
+}
+
+function OverviewCard({ label, value, accent }: OverviewCardProps) {
+  return (
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: accent,
+        padding: SPACING.xxxl,
+        borderRadius: RADIUS.xl,
+      }}
+    >
+      <Text>{label}</Text>
+      <Text style={{ fontWeight: "bold", marginTop: SPACING.xs }}>{value}</Text>
+    </View>
   );
 }
